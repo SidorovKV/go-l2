@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"strings"
+)
+
 /*
 === Утилита wget ===
 
@@ -9,5 +14,5 @@ package main
 */
 
 func main() {
-
+	fmt.Println(strings.ToLower("aEneaN"))
 }

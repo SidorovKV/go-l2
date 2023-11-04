@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
@@ -94,6 +95,15 @@ func main() {
 				}
 			case `\quit`:
 				os.Exit(0)
+			case "":
+				continue
+			default:
+				p, err := forkexec(input, args)
+				if err != nil {
+					fmt.Println(err)
+					continue
+				}
+				p.Wait()
 			}
 			input = ""
 			err = nil
@@ -128,7 +138,7 @@ func cd(path string, currentDir string) error {
 		secondTry := path
 		if _, err := os.Stat(firstTry); err == nil {
 			dir = firstTry
-		} else if _, err := os.Stat(secondTry); err == nil {
+		} else if _, err = os.Stat(secondTry); err == nil {
 			dir = secondTry
 		} else {
 			return errors.New("no such file or directory")
@@ -165,4 +175,59 @@ func kill(args []string) error {
 		}
 	}
 	return nil
+}
+
+func forkexec(input string, args []string) (*os.Process, error) {
+	if input[:2] == "./" {
+		currentDir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		path := currentDir + "/" + input[2:]
+		if err = checkFileExecutable(path); err != nil {
+			return nil, err
+		}
+		return startProcess(path, args)
+	} else {
+		if err := checkFileExecutable(input); err != nil {
+			return nil, err
+		}
+		return startProcess(input, args)
+	}
+}
+
+func startProcess(pathToFile string, args []string) (*os.Process, error) {
+	env := os.Environ()
+	var procAttr os.ProcAttr
+	procAttr.Files = []*os.File{os.Stdin,
+		os.Stdout, os.Stderr}
+	procAttr.Env = env
+	p, err := os.StartProcess(pathToFile, args, &os.ProcAttr{})
+	if err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+func checkFileExecutable(file string) error {
+	absoluteFile := file
+
+	fileInfo, err := os.Stat(absoluteFile)
+	if err != nil {
+		return err
+	}
+	m := fileInfo.Mode()
+
+	if !((m.IsRegular()) || (uint32(m&fs.ModeSymlink) == 0)) {
+		return errors.New("File " + absoluteFile + " is not a normal file or symlink.")
+	}
+	if uint32(m&0111) == 0 {
+		return errors.New("File " + absoluteFile + " is not executable.")
+	}
+	if uint32(m&0100) == 0 || uint32(m&0010) == 0 {
+		return errors.New("File " + absoluteFile + " is not executable by this user.")
+	}
+
+	return nil
+
 }
