@@ -171,6 +171,47 @@ Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
 ---
 `
 	test10 := test{"Simple grep by word ignore case", args10, want10, false}
+
+	// Test case 11 ----------------------------------------------------------------------------
+	flags11 := &flags{i: true, c: true}
+	nonFlagArgs11 := []string{"aEneaN", "test_text.txt"}
+	args11 := args{flags11, nonFlagArgs11}
+	want11 := `test_text.txt:4
+`
+	test11 := test{"Simple grep count by word ignore case", args11, want11, false}
+
+	// Test case 12 ----------------------------------------------------------------------------
+	flags12 := &flags{F: true}
+	nonFlagArgs12 := []string{"Aenean", "test_text.txt"}
+	args12 := args{flags12, nonFlagArgs12}
+	want12 := `test_text.txt:
+Aenean commodo ligula eget dolor.
+Aenean massa.
+Aenean vulputate eleifend tellus.
+Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
+---
+`
+	test12 := test{"Simple grep by word -F", args12, want12, false}
+
+	// Test case 13 ----------------------------------------------------------------------------
+	flags13 := &flags{F: true, v: true}
+	nonFlagArgs13 := []string{"Aenean", "test_text.txt"}
+	args13 := args{flags13, nonFlagArgs13}
+	want13 := `test_text.txt:
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+Donec quam felis, ultricies 538 nec, pellentesque eu, pretium quis, sem.
+Nulla consequat mas987sa quis enim.
+Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.
+In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo.
+Nullam dictum felis eu pede mollis pretium.
+Integer tincidunt.
+Cras dapibus 1876.
+Vivamus elementum semper nisi.
+Aliquam lorem ante, dapibus in, viverra quis, feugiat.
+---
+`
+	test13 := test{"Simple grep by word -F -v", args13, want13, false}
 	// -------------------------------------------------------------------------------------------------
 
 	tests := []test{
@@ -184,6 +225,9 @@ Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
 		test8,
 		test9,
 		test10,
+		test11,
+		test12,
+		test13,
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

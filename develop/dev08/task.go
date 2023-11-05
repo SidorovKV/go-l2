@@ -78,7 +78,7 @@ func main() {
 					fmt.Println(err)
 				}
 			case "echo":
-				fmt.Println("Not implemented yet")
+				echo(args)
 			case "pwd":
 				pwd()
 			case "cd":
@@ -109,6 +109,26 @@ func main() {
 			err = nil
 		}
 	}
+}
+
+func echo(args []string) {
+	env := os.Environ()
+	for _, arg := range args {
+		if arg[0:1] == "$" {
+			arg = strings.Trim(arg, "$")
+			for _, envArg := range env {
+				envArg = strings.TrimSuffix(envArg, "\n")
+				envArg = strings.TrimSpace(envArg)
+				splitted := strings.Split(envArg, "=")
+				if arg == splitted[0] {
+					fmt.Print(splitted[1], " ")
+				}
+			}
+		} else {
+			fmt.Print(arg, " ")
+		}
+	}
+	fmt.Println()
 }
 
 func pwd() {
